@@ -158,7 +158,7 @@ fn main() {
 fn draw_rotated_donut(rot: f64) -> String {
   let mut canvas = Canvas::with_site_from(Point::at(0., 0., -5.));
   for i in 0..8 {
-    let theta = 2. * PI / 8. * i as f64;
+    let theta = 2. * PI / 8. * i as f64 + rot;
     let p = Point::polar_at(1.5, theta, 0.).rot_z(1.).rot_y(rot);
     let s = Sphere {radius: 0.8, pos: p };
     s.light(&mut canvas);

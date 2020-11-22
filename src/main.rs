@@ -1,6 +1,8 @@
 use term_size;
 use std::ops::Add;
 use std::f64::consts::PI;
+use std::thread::sleep;
+use std::time::Duration;
 
 struct Point {
   x: f64,
@@ -68,10 +70,10 @@ struct Sphere {
 
 impl Sphere {
   fn light(self, canvas: &mut Canvas) -> () {
-    for i in 0..300 {
-      for j in 0..300 {
-        let phi = PI / 300. * i as f64;
-        let theta = 2. * PI / 300. * j as f64;
+    for i in 0..150 {
+      for j in 0..150 {
+        let phi = PI / 150. * i as f64;
+        let theta = 2. * PI / 150. * j as f64;
         let norm = Point::polar_at(self.radius, phi, theta);
         let p = &self.pos + &norm;
         let dz = p.z - canvas.site.z;
@@ -128,24 +130,48 @@ impl Canvas {
       ]
     }
   }
-  fn show(self) -> () {
-    println!("Hello, World!");
+  fn show(self) -> String {
+    let mut buffer = String::with_capacity((self.width + 1) * self.height);
     for row in self.pixels {
       for p in row {
-        print!("{}", p.to_char());
+        buffer.push(p.to_char());
       }
-      println!("")
+      buffer.push('\n');
     }
+    buffer
   }
 }
 
 fn main() {
-    let mut canvas = Canvas::with_site_from(Point::at(0., 0., -5.));
-    for i in 0..8 {
-      let theta = 2. * PI / 8. * i as f64;
-      let p = Point::polar_at(1.5, theta, 0.).rot_z(1.).rot_y(1.);
-      let s = Sphere {radius: 0.8, pos: p };
-      s.light(&mut canvas);
+  let frames = {
+    let n = 120;
+    let mut frames = Vec::with_capacity(n);
+    for i in 0..n {
+      let rot = 2. * PI / n as f64 * i as f64;
+      frames.push(draw_rotated_donut(rot));
     }
-    canvas.show();
+    frames
+  };
+  animate(frames);
+}
+
+fn draw_rotated_donut(rot: f64) -> String {
+  let mut canvas = Canvas::with_site_from(Point::at(0., 0., -5.));
+  for i in 0..8 {
+    let theta = 2. * PI / 8. * i as f64;
+    let p = Point::polar_at(1.5, theta, 0.).rot_z(1.).rot_y(rot);
+    let s = Sphere {radius: 0.8, pos: p };
+    s.light(&mut canvas);
+  }
+  canvas.show()
+}
+
+fn animate(frames: Vec<String>) {
+  let rest = Duration::from_millis(16);
+  loop {
+    for f in &frames {
+      println!("{}", f);
+      sleep(rest);
+    }
+  }
 }

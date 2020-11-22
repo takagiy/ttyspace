@@ -85,7 +85,7 @@ impl Sphere {
             && cy >= 0 && cy < canvas.height as i32
             && p.z < canvas.pixels[cy as usize][cx as usize].z
         {
-          let light = norm.dot(Point::at(-1., -1., -1.)) * canvas.light;
+          let light = norm.dot(Point::polar_at(1., PI * 2. / 3., -PI * 2. / 3.)) * canvas.light;
           canvas.pixels[cy as usize][cx as usize] = Pixel{ light: light, z: p.z };
         }
       }
@@ -122,7 +122,7 @@ impl Canvas {
     Canvas{
       site: at,
       scale: 150.,
-      light: 2.,
+      light: 1.5,
       width: w,
       height: h,
       pixels: vec![

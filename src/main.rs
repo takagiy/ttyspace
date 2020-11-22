@@ -12,6 +12,39 @@ impl Point {
   fn at(x: f64, y: f64, z: f64) -> Point {
     Point {x: x, y: y, z: z}
   }
+
+  fn polar_at(r: f64, phi: f64, theta: f64) -> Point {
+    Point{
+      x: r * phi.sin() * theta.cos(),
+      y: r * phi.sin() * theta.sin(),
+      z: r * phi.cos()
+    }
+  }
+
+  fn rot_x(self, theta: f64) -> Point {
+    Point {
+      x: self.x,
+      y: self.y * theta.cos() - self.z * theta.sin(),
+      z: self.y * theta.sin() + self.z * theta.cos()
+    }
+  }
+
+  fn rot_y(self, theta: f64) -> Point {
+    Point {
+      x: self.x * theta.cos() + self.z * theta.sin(),
+      y: self.y,
+      z: -self.x * theta.sin() + self.z * theta.cos()
+    }
+  }
+
+  fn rot_z(self, theta: f64) -> Point {
+    Point {
+      x: self.x * theta.cos() - self.y * theta.sin(),
+      y: self.x * theta.sin() + self.y * theta.cos(),
+      z: self.z
+    }
+  }
+
   fn dot(self, other: Point) -> f64 {
     self.x * other.x + self.y * other.y + self.z * other.z
   }
@@ -39,11 +72,7 @@ impl Sphere {
       for j in 0..300 {
         let phi = PI / 300. * i as f64;
         let theta = 2. * PI / 300. * j as f64;
-        let norm = Point{
-          x: self.radius * phi.sin() * theta.cos(),
-          y: self.radius * phi.sin() * theta.sin(),
-          z: self.radius * phi.cos()
-        };
+        let norm = Point::polar_at(self.radius, phi, theta);
         let p = &self.pos + &norm;
         let dz = p.z - canvas.site.z;
         let x = p.x / dz * canvas.scale;
@@ -111,8 +140,12 @@ impl Canvas {
 }
 
 fn main() {
-    let earth = Sphere {radius: 1., pos: Point::at(0., 0., 0.) };
     let mut canvas = Canvas::with_site_from(Point::at(0., 0., -5.));
-    earth.light(&mut canvas);
+    for i in 0..8 {
+      let theta = 2. * PI / 8. * i as f64;
+      let p = Point::polar_at(1.5, theta, 0.).rot_z(1.).rot_y(1.);
+      let s = Sphere {radius: 0.8, pos: p };
+      s.light(&mut canvas);
+    }
     canvas.show();
 }
